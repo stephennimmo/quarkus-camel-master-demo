@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: camel-leader-election
+  namespace: quarkus-camel-master-demo
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: camel-leader-election
+  namespace: quarkus-camel-master-demo
+rules:
+  - apiGroups:
+      - ""
+      - "coordination.k8s.io"
+    resources:
+      - configmaps
+      - secrets
+      - pods
+      - leases
+    verbs:
+      - create
+      - delete
+      - deletecollection
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: camel-leader-election
+  namespace: quarkus-camel-master-demo
+subjects:
+  - kind: ServiceAccount
+    name: camel-leader-election
+roleRef:
+  kind: Role
+  name: camel-leader-election
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quarkus-camel-master-demo-deployment
+  namespace: quarkus-camel-master-demo
+  labels:
+    app: quarkus-camel-master-demo
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: quarkus-camel-master-demo
+  template:
+    metadata:
+      labels:
+        app: quarkus-camel-master-demo
+    spec:
+      serviceAccountName: "camel-leader-election"
+      containers:
+        - name: quarkus-camel-master-demo-container
+          image: quay.io/stephennimmo/quarkus-camel-master-demo:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          env:
+            - name: QUARKUS_PROFILE
+              value: "prod"
+            - name: QUARKUS_LOG_LEVEL
+              value: "DEBUG"
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: quarkus-camel-master-demo-service
+  namespace: quarkus-camel-master-demo
+spec:
+  selector:
+    app: quarkus-camel-master-demo
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: quarkus-camel-master-demo-route
+  namespace: quarkus-camel-master-demo
+spec:
+  host: quarkus-camel-master-demo.apps.ocp.snimmo.com
+  to:
+    kind: Service
+    name: quarkus-camel-master-demo-service
+    weight: 100
+  port:
+    targetPort: 8080
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
