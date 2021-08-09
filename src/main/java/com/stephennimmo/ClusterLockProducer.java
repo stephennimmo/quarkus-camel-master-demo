@@ -9,26 +9,23 @@ import org.apache.camel.component.kubernetes.cluster.KubernetesClusterService;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
 public class ClusterLockProducer {
 
-
     @Produces
     @UnlessBuildProfile("prod")
     public CamelClusterService fileLockClusterService(CamelContext camelContext) throws Exception {
         FileLockClusterService service = new FileLockClusterService();
-        service.setId("blah");
+        service.setId(UUID.randomUUID().toString());
         service.setRoot("cluster");
         service.setAcquireLockDelay(1, TimeUnit.SECONDS);
         service.setAcquireLockInterval(1, TimeUnit.SECONDS);
-        service.setCamelContext(camelContext);
-        camelContext.addService(service);
         return service;
     }
 
-    /*
     @Produces
     @IfBuildProfile("prod")
     public CamelClusterService kubernetesClusterService(CamelContext camelContext) {
@@ -36,5 +33,5 @@ public class ClusterLockProducer {
         service.setCamelContext(camelContext);
         return service;
     }
-     */
+
 }

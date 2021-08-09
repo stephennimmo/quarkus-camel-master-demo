@@ -22,7 +22,7 @@ One of the instances should have the lock (probably the first one). To demo the 
 ## Deploy to OpenShift
 
 ```
-oc apply -f manifests/demo.yaml
+oc apply -k manifests
 ```
 
 
