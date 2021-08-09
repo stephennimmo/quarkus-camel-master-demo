@@ -1,7 +1,10 @@
-package com.stephennimmo;
+package com.stephennimmo.route;
 
 import org.apache.camel.builder.RouteBuilder;
 
+import javax.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
 public class TimerLoggerClusteredRoute extends RouteBuilder {
 
     @Override

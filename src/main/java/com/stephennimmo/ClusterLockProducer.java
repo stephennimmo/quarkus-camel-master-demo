@@ -2,42 +2,39 @@ package com.stephennimmo;
 
 import io.quarkus.arc.profile.IfBuildProfile;
 import io.quarkus.arc.profile.UnlessBuildProfile;
+import org.apache.camel.CamelContext;
 import org.apache.camel.cluster.CamelClusterService;
 import org.apache.camel.component.file.cluster.FileLockClusterService;
 import org.apache.camel.component.kubernetes.cluster.KubernetesClusterService;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.inject.Produces;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 @ApplicationScoped
-public class ClusterLockProvider {
+public class ClusterLockProducer {
 
-    @ConfigProperty(name = "lock.namespace")
-    Optional<String> lockNamespace;
 
     @Produces
     @UnlessBuildProfile("prod")
-    public CamelClusterService fileLockClusterService() {
+    public CamelClusterService fileLockClusterService(CamelContext camelContext) throws Exception {
         FileLockClusterService service = new FileLockClusterService();
-        service.setRoot("target/cluster");
+        service.setId("blah");
+        service.setRoot("cluster");
         service.setAcquireLockDelay(1, TimeUnit.SECONDS);
         service.setAcquireLockInterval(1, TimeUnit.SECONDS);
+        service.setCamelContext(camelContext);
+        camelContext.addService(service);
         return service;
     }
 
+    /*
     @Produces
     @IfBuildProfile("prod")
-    public CamelClusterService kubernetesClusterService() {
-        if (lockNamespace.isEmpty()) {
-            throw new RuntimeException("lock.namespace is not configured");
-        }
+    public CamelClusterService kubernetesClusterService(CamelContext camelContext) {
         KubernetesClusterService service = new KubernetesClusterService();
-        service.setKubernetesNamespace(lockNamespace.get());
-        service.addToClusterLabels("app", "quarkus-camel-master-demo");
+        service.setCamelContext(camelContext);
         return service;
     }
-
+     */
 }

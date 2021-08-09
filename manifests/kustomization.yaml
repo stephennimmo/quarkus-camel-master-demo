@@ -1,0 +1,6 @@
+namespace: quarkus-camel-master-demo
+
+resources:
+  - "namespace.yaml"
+  - "permissions.yaml"
+  - "deployment.yaml"
