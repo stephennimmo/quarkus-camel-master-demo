@@ -24,7 +24,6 @@ public class ClusterLockProducer {
     @UnlessBuildProfile("prod")
     public CamelClusterService fileLockClusterService(CamelContext camelContext) throws Exception {
         FileLockClusterService service = new FileLockClusterService();
-        service.setId(UUID.randomUUID().toString());
         service.setRoot("cluster");
         service.setAcquireLockDelay(1, TimeUnit.SECONDS);
         service.setAcquireLockInterval(1, TimeUnit.SECONDS);
